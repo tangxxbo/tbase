@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.couyis.base.code.dao.CodeRangeMapper">
+	<resultMap id="BaseResultMap" type="com.couyis.base.code.pojo.CodeRange">
+		<!-- 查询与实体类对应关系 -->
+		<id column="ID" jdbcType="VARCHAR" property="id" />
+		<result column="CODE" jdbcType="VARCHAR" property="code" />
+		<result column="STARTCODE" jdbcType="VARCHAR" property="startCode" />
+		<result column="STOPCODE" jdbcType="VARCHAR" property="stopCode" />
+		<result column="MAXCODE" jdbcType="VARCHAR" property="maxCode" />
+		<result column="ISEXT" jdbcType="INTEGER" property="isExt" />
+		<result column="CREATE_USER" jdbcType="VARCHAR" property="createUser" />
+		<result column="CREATE_TIME" jdbcType="TIMESTAMP" property="createTime" />
+		<result column="UPDATE_USER" jdbcType="VARCHAR" property="updateUser" />
+		<result column="UPDATE_TIME" jdbcType="TIMESTAMP" property="updateTime" />
+	</resultMap>
+	<sql id="Page_Column_List"><!-- 查询的字段 -->
+		A.ID, A.CODE, A.STARTCODE, A.STOPCODE, A.MAXCODE,A.ISEXT,
+		A.CREATE_USER ,A.CREATE_TIME ,A.UPDATE_USER ,A.UPDATE_TIME 
+	</sql>
+	<sql id="Page_Execute"><!--  MARIADB分页查询 -->
+		LIMIT ${offset},${pageSize}
+	</sql>
+	<sql id="Page_Execute_Head"><!-- ORACLE 分页查询 -->
+		<![CDATA[ SELECT * FROM (SELECT A.*, ROWNUM RN FROM ( ]]>
+	</sql>
+	
+	<sql id="Page_Execute_Tail"><!-- ORACLE 分页查询 -->
+		<![CDATA[ ) A WHERE ROWNUM <= ${pageSize}+${offset} )WHERE RN > ${offset}]]>
+	</sql>
+	<sql id="Page_Order_By"><!-- 排序字段 -->
+		<if test="orderField != null and orderDirection != null">
+			ORDER BY ${orderField} ${orderDirection}
+		</if>
+	</sql>
+
+	<!-- 查询记录数 -->
+	<select id="findCount" parameterType="com.couyis.base.code.bean.CodeRangeBean"
+		resultType="java.lang.Integer">
+		SELECT COUNT(*) FROM BASE_CODE_RANGE A
+		WHERE 1=1
+		<!-- <if test="parentId != null">
+			AND A.PARENT_ID='${parentId}'
+		</if>
+		<if test="parentId == null">
+			<if test="parentCode == null or parentCode==''">
+			AND A.PARENT_ID IS NULL
+			</if>
+		</if> -->
+		<if test="code != null">
+			AND A.CODE LIKE '%${code}%'
+		</if>
+		<if test="startCode != null">
+			AND A.STARTCODE LIKE '%${startCode}%'
+		</if>
+		<if test="stopCode != null">
+			AND A.STOPCODE LIKE '%${stopCode}%'
+		</if>
+		<if test="maxCode != null">
+			AND A.MAXCODE = '${maxCode}'
+		</if>
+	</select>
+
+	<!-- 分页查询 -->
+	<select id="findPage" parameterType="com.couyis.base.code.bean.CodeRangeBean"
+		resultMap="BaseResultMap">
+		<!-- ORACLE <include refid="Page_Execute_Head" /> -->
+		SELECT
+		<include refid="Page_Column_List" />
+		FROM BASE_CODE_RANGE A 
+		WHERE 1=1
+		<if test="code != null">
+			AND A.CODE LIKE '%${code}%'
+		</if>
+		<if test="startCode != null">
+			AND A.STARTCODE LIKE '%${startCode}%'
+		</if>
+		<if test="stopCode != null">
+			AND A.STOPCODE LIKE '%${stopCode}%'
+		</if>
+		<if test="maxCode != null">
+			AND A.MAXCODE = '${maxCode}'
+		</if>
+		<include refid="Page_Order_By" />
+		<include refid="Page_Execute" />
+		<!-- ORACLE <include refid="Page_Execute_Tail" /> -->
+	</select>
+
+	<!-- 分页查询 -->
+	<!--<select id="findSuggest" parameterType="com.couyis.base.code.bean.CodeRangeBean"
+		resultMap="BaseResultMap">
+		SELECT
+		<include refid="Page_Column_List" />
+		FROM BASE_CODE_RANGE A 
+		WHERE 1=1
+		<if test="parentCode != null and parentCode!=''">
+			AND B.CODE = '${parentCode}'
+		</if>
+		<if test="keyword != null">
+			AND (A.NAME LIKE '%${keyword}%' OR A.CODE LIKE '%${keyword}%')
+		</if>
+	</select>
+	
+		<select id="findSuggest2" parameterType="com.couyis.base.code.bean.CodeRangeBean"
+		resultMap="BaseResultMap">
+		SELECT
+		<include refid="Page_Column_List" />
+		FROM BASE_DICT A LEFT JOIN BASE_DICT B
+		ON A.PARENT_ID=B.ID
+		WHERE 1=1
+		<if test="parentId != null and parentId!=''">
+			AND B.ID = '${parentId}'
+		</if>
+		<if test="keyword != null">
+			AND (A.NAME LIKE '%${keyword}%' OR A.CODE LIKE '%${keyword}%')
+		</if>
+	</select>-->
+
+	<!-- 查询所有 -->
+	<select id="findAll" resultMap="BaseResultMap">
+		SELECT
+		<include refid="Page_Column_List" />
+		FROM BASE_CODE_RANGE A
+	</select>
+	
+	<!-- 查询code -->
+	<select id="findCode" parameterType="java.lang.String" resultType = "java.lang.String">
+		SELECT
+		A.CODE
+		FROM BASE_CODE_RANGE A
+		WHERE 1=1
+		<if test="code != null">
+		 AND A.CODE = #{code,jdbcType=VARCHAR}
+		</if>
+		 
+	</select>
+	
+	<!-- 通过ID查询code -->
+	<select id="findByCrId" parameterType="java.lang.String" resultType = "java.lang.String">
+		SELECT
+		A.CODE
+		FROM BASE_CODE_RANGE A
+		WHERE 1=1
+		<if test="id != null">
+		 AND A.ID = #{code,jdbcType=VARCHAR}
+		</if>
+		 
+	</select>
+
+	<!-- 查询下级菜单 -->
+	<!--<select id="findByParentId" parameterType="java.lang.String"
+		resultMap="BaseResultMap">
+		SELECT
+		<include refid="Page_Column_List" />
+		FROM BASE_DICT A LEFT JOIN BASE_DICT B
+		ON A.PARENT_ID=B.ID
+		<if test="parentId != null">
+			WHERE A.PARENT_ID = #{parentId,jdbcType=VARCHAR}
+		</if>
+		<if test="parentId == null">
+			WHERE A.PARENT_ID IS NULL
+		</if>
+	</select>-->
+
+	<!-- 获取单条数据 -->
+	<select id="findByCode" parameterType="java.lang.String"
+		resultMap="BaseResultMap">
+		SELECT
+		<include refid="Page_Column_List" />
+		FROM BASE_CODE_RANGE A
+		WHERE A.CODE =
+		#{code,jdbcType=VARCHAR}
+	</select>
+
+	<!-- 获取单条数据 -->
+	<select id="findById" parameterType="java.lang.String"
+		resultMap="BaseResultMap">
+		SELECT
+		<include refid="Page_Column_List" />
+		FROM BASE_CODE_RANGE A
+		WHERE A.ID =
+		#{id,jdbcType=VARCHAR}
+	</select>
+	<!-- 删除数据 -->
+	<delete id="deleteById" parameterType="java.lang.String">
+		DELETE FROM
+		BASE_CODE_RANGE
+		WHERE
+		ID = #{id,jdbcType=VARCHAR}
+	</delete>
+	<!-- 插入数据 -->
+	<insert id="save" parameterType="com.couyis.base.code.pojo.CodeRange">
+		INSERT INTO
+		BASE_CODE_RANGE
+		(ID,CODE,STARTCODE,STOPCODE,MAXCODE,ISEXT,CREATE_USER,CREATE_TIME )
+		VALUES
+		(#{id,jdbcType=VARCHAR},
+		#{code,jdbcType=VARCHAR},
+		#{startCode,jdbcType=VARCHAR},
+		#{stopCode,jdbcType=VARCHAR},
+		#{maxCode,jdbcType=VARCHAR},
+		#{isExt,jdbcType=INTEGER},
+		#{createUser,jdbcType=VARCHAR},
+		#{createTime,jdbcType=TIMESTAMP})
+	</insert>
+
+	<!-- 更新数据 -->
+	<update id="update" parameterType="com.couyis.base.code.pojo.CodeRange">
+		UPDATE BASE_DICT
+		<set>
+			<if test="code != null">
+				CODE = #{code,jdbcType=VARCHAR},
+			</if>
+			<if test="name != null">
+				STARTCODE = #{startCode,jdbcType=VARCHAR},
+			</if>
+			<if test="remark != null">
+				STOPCODE = #{stopCode,jdbcType=VARCHAR},
+			</if>
+				MAXCODE = #{maxCode,jdbcType=VARCHAR},
+			<if test="sort != null">
+				ISEXT = #{isExt,jdbcType=INTEGER},
+			</if>
+			<if test="updateUser != null">
+				UPDATE_USER = #{updateUser,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null">
+				UPDATE_TIME = #{updateTime,jdbcType=TIMESTAMP},
+			</if>
+		</set>
+		WHERE ID = #{id,jdbcType=VARCHAR}
+	</update>
+</mapper>
